@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro e Carrossel</title>
+    <link rel="stylesheet" href="teste.css">
+</head>
+
+<body>
+    <div class="header">
+        <div class="titulo">Biblioteca</div>
+        <a href="" class="t1">texto</a>
+        <a href="" class="t1">generico</a>
+        <a href="" class="t1">lorem</a>
+        <a href="" class="t1">ipsum</a>
+    </div>
+    <div class="container-formulario">
+        <form id="formulario-cadastro">
+            <input type="text" id="nome" placeholder="Nome">
+            <input type="text" id="autor" placeholder="Autor">
+            <input type="text" id="ano" placeholder="Ano">
+            <input type="file" id="imagem" accept="image/*">
+            <button type="submit">Cadastrar</button>
+        </form>
+    </div>
+
+    <div class="carrossel">
+        <div class="container-carrossel">
+            <p class="mensagem-carrossel">Cadastre um livro !</p>
+            <div class="imagem-editavel"></div>
+        </div>
+        <button class="botao-anterior">Anterior</button>
+        <button class="botao-proximo">Próximo</button>
+        <button class="botao-excluir">Excluir</button>
+    </div>
+
+    <script>
+        const formulario = document.getElementById('formulario-cadastro');
+        const containerCarrossel = document.querySelector('.container-carrossel');
+        const mensagemCarrossel = document.querySelector('.mensagem-carrossel');
+        const botaoAnterior = document.querySelector('.botao-anterior');
+        const botaoProximo = document.querySelector('.botao-proximo');
+        const botaoExcluir = document.querySelector('.botao-excluir');
+
+        let indiceAtual = -1;
+        let dados = [];
+
+        formulario.addEventListener('submit', function (evento) {
+            evento.preventDefault();
+
+            const nome = document.getElementById('nome').value;
+            const autor = document.getElementById('autor').value;
+            const ano = document.getElementById('ano').value;
+            const imagemInput = document.getElementById('imagem');
+            const imagem = imagemInput.files[0];
+
+            if (nome && autor && ano && imagem) {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    const imagemBase64 = event.target.result;
+                    dados.push({ nome, autor, ano, imagem: imagemBase64 });
+
+                    if (indiceAtual === -1) {
+                        indiceAtual = 0;
+                        mensagemCarrossel.style.display = 'none';
+                    }
+
+                    formulario.reset();
+                    imagemInput.value = '';
+
+                    atualizarCarrossel();
+                };
+                reader.readAsDataURL(imagem);
+            }
+        });
+
+        botaoAnterior.addEventListener('click', () => {
+            if (dados.length > 0) {
+                indiceAtual = (indiceAtual - 1 + dados.length) % dados.length;
+                atualizarCarrossel();
+            }
+        });
+
+        botaoProximo.addEventListener('click', () => {
+            if (dados.length > 0) {
+                indiceAtual = (indiceAtual + 1) % dados.length;
+                atualizarCarrossel();
+            }
+        });
+
+        botaoExcluir.addEventListener('click', () => {
+            if (dados.length > 0) {
+                dados.splice(indiceAtual, 1);
+                if (dados.length === 0) {
+                    mensagemCarrossel.style.display = 'block';
+                    indiceAtual = -1;
+                } else {
+                    if (indiceAtual >= dados.length) {
+                        indiceAtual = dados.length - 1;
+                    }
+                }
+                atualizarCarrossel();
+            }
+        });
+
+        function atualizarCarrossel() {
+            containerCarrossel.innerHTML = '';
+
+            if (dados.length > 0) {
+                const item = dados[indiceAtual];
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'item-carrossel';
+                itemDiv.innerHTML = `
+      <h2>${item.nome}</h2>
+      <p>Autor: ${item.autor}</p>
+      <p>Ano: ${item.ano}</p>
+      <img src="${item.imagem}" alt="Imagem de ${item.nome}">
+    `;
+                containerCarrossel.appendChild(itemDiv);
+                mensagemCarrossel.style.display = 'none';
+            } else {
+                mensagemCarrossel.style.display = 'block';
+            }
+        }
+
+        // Para atualizar o carrossel inicialmente
+        atualizarCarrossel();
+
+    </script>
+</body>
+
+</html>
